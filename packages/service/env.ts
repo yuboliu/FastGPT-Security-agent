@@ -71,6 +71,15 @@ export const serviceEnv = createEnv({
     OPENAI_BASE_URL: UrlSchema.default('https://api.openai.com/v1'),
     CHAT_API_KEY: z.string().optional(),
 
+    // 安全智能体集成（CMDB / ITSM）
+    CMDB_BASE_URL: UrlSchema.optional(),
+    CMDB_API_USERNAME: z.string().optional(),
+    CMDB_API_PASSWORD: z.string().optional(),
+    ITSM_BASE_URL: UrlSchema.optional(),
+    ITSM_API_USERNAME: z.string().optional(),
+    ITSM_API_PASSWORD: z.string().optional(),
+    ITSM_APP_TOKEN: z.string().optional(),
+
     PRO_URL: UrlSchema.optional(),
 
     // Agent sandbox proxy

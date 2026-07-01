@@ -40,6 +40,11 @@ import { CodeNode } from './system/sandbox';
 import { TextEditorNode } from './system/textEditor';
 import { ToolParamsNode } from './system/toolParams';
 import { VariableUpdateNode } from './system/variableUpdate';
+import { SecurityApiStubNode } from './system/securityApiStub';
+import { RiskScorerNode } from './system/riskScorer';
+import { AuditLoggerNode } from './system/auditLogger';
+import { CmdbLookupNode } from './system/cmdbLookup';
+import { ItsmTicketNode } from './system/itsmTicket';
 
 const systemNodes: FlowNodeTemplateType[] = [
   AiChatModule,
@@ -61,7 +66,12 @@ const systemNodes: FlowNodeTemplateType[] = [
   CodeNode,
   ParallelRunNode,
   LoopRunNode,
-  LoopRunBreakNode
+  LoopRunBreakNode,
+  SecurityApiStubNode,
+  RiskScorerNode,
+  AuditLoggerNode,
+  CmdbLookupNode,
+  ItsmTicketNode
 ];
 /* app flow module templates */
 export const appSystemModuleTemplates: FlowNodeTemplateType[] = [

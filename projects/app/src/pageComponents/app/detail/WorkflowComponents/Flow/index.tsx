@@ -67,7 +67,12 @@ const nodeTypes: Record<FlowNodeTypeEnum, any> = {
   [FlowNodeTypeEnum.nestedStart]: dynamic(() => import('./nodes/Loop/NodeLoopStart')),
   [FlowNodeTypeEnum.nestedEnd]: dynamic(() => import('./nodes/Loop/NodeLoopEnd')),
   [FlowNodeTypeEnum.formInput]: dynamic(() => import('./nodes/NodeFormInput')),
-  [FlowNodeTypeEnum.comment]: dynamic(() => import('./nodes/NodeComment'))
+  [FlowNodeTypeEnum.comment]: dynamic(() => import('./nodes/NodeComment')),
+  [FlowNodeTypeEnum.securityApiStub]: NodeSimple,
+  [FlowNodeTypeEnum.riskScorer]: NodeSimple,
+  [FlowNodeTypeEnum.auditLogger]: NodeSimple,
+  [FlowNodeTypeEnum.cmdbLookup]: NodeSimple,
+  [FlowNodeTypeEnum.itsmTicket]: NodeSimple
 };
 const edgeTypes = {
   [EDGE_TYPE]: ButtonEdge
