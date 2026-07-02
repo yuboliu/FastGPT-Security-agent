@@ -170,14 +170,7 @@ export enum FlowNodeTypeEnum {
   // child:
   appModule = 'appModule',
   pluginModule = 'pluginModule',
-  runApp = 'app',
-
-  // security agent
-  securityApiStub = 'securityApiStub',
-  riskScorer = 'riskScorer',
-  auditLogger = 'auditLogger',
-  cmdbLookup = 'cmdbLookup',
-  itsmTicket = 'itsmTicket'
+  runApp = 'app'
 }
 
 // node IO value type

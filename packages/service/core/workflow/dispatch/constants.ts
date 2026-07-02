@@ -34,11 +34,6 @@ import { dispatchIfElse } from './tools/runIfElse';
 import { dispatchUpdateVariable } from './tools/runUpdateVar';
 import { dispatchTextEditor } from './tools/textEditor';
 import { dispatchRunAgent } from './ai/agent';
-import { dispatchRiskScorer } from './tools/riskScorer';
-import { dispatchSecurityApiStub } from './tools/securityApiStub';
-import { dispatchAuditLogger } from './tools/auditLogger';
-import { dispatchCmdbLookup } from './tools/cmdbLookup';
-import { dispatchItsmTicket } from './tools/itsmTicket';
 
 export const callbackMap: Record<FlowNodeTypeEnum, (...args: any[]) => unknown> = {
   [FlowNodeTypeEnum.workflowStart]: dispatchWorkflowStart,
@@ -71,11 +66,6 @@ export const callbackMap: Record<FlowNodeTypeEnum, (...args: any[]) => unknown> 
   [FlowNodeTypeEnum.customFeedback]: dispatchCustomFeedback,
   [FlowNodeTypeEnum.readFiles]: dispatchReadFiles,
   [FlowNodeTypeEnum.userSelect]: dispatchUserSelect,
-  [FlowNodeTypeEnum.securityApiStub]: dispatchSecurityApiStub,
-  [FlowNodeTypeEnum.riskScorer]: dispatchRiskScorer,
-  [FlowNodeTypeEnum.auditLogger]: dispatchAuditLogger,
-  [FlowNodeTypeEnum.cmdbLookup]: dispatchCmdbLookup,
-  [FlowNodeTypeEnum.itsmTicket]: dispatchItsmTicket,
   [FlowNodeTypeEnum.parallelRun]: dispatchParallelRun,
   [FlowNodeTypeEnum.loopRun]: dispatchLoopRun,
   [FlowNodeTypeEnum.loopRunStart]: dispatchLoopRunStart,
