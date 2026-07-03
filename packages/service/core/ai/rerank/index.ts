@@ -9,8 +9,15 @@ import { text2Chunks } from '../../../worker/function';
 const logger = getLogger(LogCategories.MODULE.AI.RERANK);
 
 type PostReRankResponse = {
-  id: string;
-  results: {
+  id?: string;
+  output?: {
+    results: {
+      index: number;
+      relevance_score: number;
+      document?: { text: string };
+    }[];
+  };
+  results?: {
     index: number;
     relevance_score: number;
   }[];
@@ -19,6 +26,10 @@ type PostReRankResponse = {
       input_tokens: number;
       output_tokens: number;
     };
+  };
+  usage?: {
+    input_tokens?: number;
+    total_tokens?: number;
   };
 };
 type ReRankCallResult = {
@@ -95,12 +106,27 @@ export async function reRankRecall({
 
   // 模型的请求 url，允许是内网
   const requestUrl = model.requestUrl ? model.requestUrl : `${baseUrl}/rerank`;
-  const requestBody = {
-    model: model.model,
-    query,
-    documents: documentsTextArray,
-    ...model.defaultConfig
-  };
+  // 支持多种 rerank 服务商格式：openai / dashscope(阿里云百炼)
+  const isDashscopeRerank = model.rerankFormat === 'dashscope';
+  const requestBody = isDashscopeRerank
+    ? {
+        model: model.model,
+        input: {
+          query,
+          documents: documentsTextArray
+        },
+        parameters: {
+          return_documents: true,
+          top_n: documentsTextArray.length,
+          ...model.defaultConfig
+        }
+      }
+    : {
+        model: model.model,
+        query,
+        documents: documentsTextArray,
+        ...model.defaultConfig
+      };
 
   const apiResult = await axiosWithoutSSRF
     .post<PostReRankResponse>(requestUrl, requestBody, {
@@ -112,7 +138,8 @@ export async function reRankRecall({
     })
     .then((res) => res.data)
     .then(async (data) => {
-      if (!data?.results || data?.results?.length === 0) {
+      const rawResults = data?.output?.results ?? data?.results;
+      if (!rawResults || rawResults.length === 0) {
         logger.error('Rerank returned empty results', { data });
         return {
           results: [],
@@ -125,7 +152,7 @@ export async function reRankRecall({
         logger.info('Rerank completed', { durationMs: time });
       }
 
-      const providerResults = data.results ?? [];
+      const providerResults = rawResults ?? [];
 
       const existsId = new Set<string>();
       const results: {
@@ -148,7 +175,8 @@ export async function reRankRecall({
       return {
         results,
         inputTokens:
-          data?.meta?.tokens?.input_tokens ||
+          data?.usage?.input_tokens ??
+          data?.meta?.tokens?.input_tokens ??
           (await countPromptTokens(documentsTextArray.join('\n') + query))
       };
     })

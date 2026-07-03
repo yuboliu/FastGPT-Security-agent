@@ -286,6 +286,45 @@ const ProviderField = React.memo(function ProviderField({
   );
 });
 
+const RerankFormatField = React.memo(function RerankFormatField({
+  control,
+  setValue,
+  t
+}: {
+  control: Control<SystemModelItemType>;
+  setValue: UseFormSetValue<SystemModelItemType>;
+  t: any;
+}) {
+  const rerankFormat = useWatch({
+    control,
+    name: 'rerankFormat'
+  });
+
+  const options = useMemo(
+    () => [
+      { label: 'OpenAI', value: 'openai' },
+      { label: t('account_model:rerank_format_dashscope'), value: 'dashscope' }
+    ],
+    [t]
+  );
+
+  return (
+    <Field
+      label={t('account_model:rerank_format')}
+      tip={t('account_model:rerank_format_tip')}
+    >
+      <MySelect
+        value={rerankFormat || 'openai'}
+        onChange={(value) =>
+          setValue('rerankFormat', value as 'openai' | 'dashscope', { shouldDirty: true })
+        }
+        list={options}
+        {...InputStyles}
+      />
+    </Field>
+  );
+});
+
 const ResponseFormatField = React.memo(function ResponseFormatField({
   control,
   setValue,
@@ -1079,6 +1118,7 @@ export const ModelEditModal = ({
                 {...NumberInputStyles}
               />
             </Field>
+            <RerankFormatField control={control} setValue={setValue} t={t} />
           </Grid>
         </Section>
       )}

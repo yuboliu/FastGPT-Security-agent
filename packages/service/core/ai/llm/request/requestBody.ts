@@ -146,6 +146,9 @@ export const llmCompletionsBodyFormat = async <T extends ChatCompletionCreatePar
   if (!supportParams.reasoningEffort) {
     delete requestBody.reasoning_effort;
   }
+  if (requestBody.reasoning_effort === '') {
+    delete requestBody.reasoning_effort;
+  }
 
   if (modelData.fieldMap) {
     Object.entries(modelData.fieldMap).forEach(([sourceKey, targetKey]) => {
