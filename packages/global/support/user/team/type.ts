@@ -5,7 +5,7 @@ import { TeamPermission } from '../../permission/user/controller';
 import { z } from 'zod';
 
 export const OpenaiAccountSchema = z.object({
-  key: z.string(),
+  key: z.string().optional(),
   baseUrl: z.string()
 });
 export type OpenaiAccountType = z.infer<typeof OpenaiAccountSchema>;

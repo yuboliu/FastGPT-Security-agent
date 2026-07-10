@@ -36,6 +36,14 @@ export const replaceSensitiveText = (text: string) => {
   return text;
 };
 
+/* mask the second half of an API key with '*', keep the first half for identification */
+export const desensitizeApiKey = (key?: string | null): string => {
+  if (!key) return '';
+  const len = key.length;
+  const visibleLen = Math.ceil(len / 2);
+  return key.slice(0, visibleLen) + '*'.repeat(Math.max(0, len - visibleLen));
+};
+
 /* Make sure the first letter is definitely lowercase */
 export const getNanoid = (size = 16) => {
   const firstChar = customAlphabet('abcdefghijklmnopqrstuvwxyz', 1)();

@@ -40,6 +40,7 @@ import MyMenu from '@fastgpt/web/components/common/MyMenu';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
 import QuestionTip from '@fastgpt/web/components/common/MyTooltip/QuestionTip';
 import { sanitizeModelPriceTiers } from '@fastgpt/global/core/ai/pricing';
+import { desensitizeApiKey } from '@fastgpt/global/common/string/tools';
 import MyModal from '@fastgpt/web/components/v2/common/MyModal';
 
 export const AddModelButton = ({
@@ -787,10 +788,11 @@ export const ModelEditModal = ({
   const { t, i18n } = useTranslation();
   const { feConfigs, getModelProviders } = useSystemStore();
 
-  const { control, register, getValues, setValue, handleSubmit, reset } =
+  const { control, register, getValues, setValue, handleSubmit, reset, formState } =
     useForm<SystemModelItemType>({
       defaultValues: {
         ...modelData,
+        requestAuth: desensitizeApiKey(modelData.requestAuth),
         priceTiers: (() => {
           if (modelData.type !== ModelTypeEnum.llm) return undefined;
           const tiers = modelData.priceTiers || [];
@@ -809,6 +811,7 @@ export const ModelEditModal = ({
         })()
       }
     });
+  const { dirtyFields } = formState;
 
   const reasoningEnabled = useWatch({ control, name: 'reasoning' });
   useEffect(() => {
@@ -885,6 +888,11 @@ export const ModelEditModal = ({
         if (val === null || val === undefined || Number.isNaN(val)) {
           modelData[key] = '';
         }
+      }
+
+      // If requestAuth was not edited, do not send the masked placeholder back to the server
+      if (!dirtyFields.requestAuth) {
+        delete modelData.requestAuth;
       }
 
       return putSystemModel({

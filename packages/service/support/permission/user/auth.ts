@@ -2,7 +2,7 @@ import { type TeamTmbItemType } from '@fastgpt/global/support/user/team/type';
 import { getTmbInfoByTmbId } from '../../user/team/controller';
 import { TeamErrEnum } from '@fastgpt/global/common/error/code/team';
 import { type AuthModeType, type AuthResponseType } from '../type';
-import { NullPermissionVal } from '@fastgpt/global/support/permission/constant';
+import { AuthUserTypeEnum, NullPermissionVal } from '@fastgpt/global/support/permission/constant';
 import { TeamPermission } from '@fastgpt/global/support/permission/user/controller';
 import { authCert, parseHeaderCert } from '../auth/common';
 import { MongoUser } from '../../user/schema';
@@ -40,7 +40,12 @@ export async function authUserPer(props: AuthModeType): Promise<
 
 export const authSystemAdmin = async ({ req }: { req: ApiRequestProps }) => {
   try {
-    const result = await authCert({ req, authToken: true });
+    const result = await authCert({ req, authToken: true, authApiKey: false });
+
+    if (result.authType === AuthUserTypeEnum.apikey) {
+      return Promise.reject(ERROR_ENUM.unAuthorization);
+    }
+
     const user = await MongoUser.findOne({
       _id: result.userId
     });

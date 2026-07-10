@@ -40,6 +40,7 @@ import CopyBox from '@fastgpt/web/components/common/String/CopyBox';
 import { parseI18nString } from '@fastgpt/global/common/i18n/utils';
 import type { localeType } from '@fastgpt/global/common/i18n/type';
 import { defaultProvider } from '@fastgpt/global/core/ai/provider';
+import { desensitizeApiKey } from '@fastgpt/global/common/string/tools';
 
 const ModelEditModal = dynamic(() => import('../AddModelBox').then((mod) => mod.ModelEditModal));
 
@@ -60,10 +61,15 @@ const EditChannelModal = ({
   const { t, i18n } = useTranslation();
   const { defaultModels, aiproxyChannels, getModelProvider } = useSystemStore();
   const isEdit = defaultConfig.id !== 0;
+  const originalKeyRef = useRef(defaultConfig.key);
 
-  const { register, handleSubmit, watch, setValue } = useForm({
-    defaultValues: defaultConfig
+  const { register, handleSubmit, watch, setValue, formState } = useForm({
+    defaultValues: {
+      ...defaultConfig,
+      key: desensitizeApiKey(defaultConfig.key)
+    }
   });
+  const { dirtyFields } = formState;
 
   const providerType = watch('type');
   const { data: providerList = [] } = useRequest(
@@ -152,6 +158,10 @@ const EditChannelModal = ({
     (data: ChannelInfoType) => {
       if (data.models.length === 0) {
         return Promise.reject(t('account_model:selected_model_empty'));
+      }
+      // If key was not edited, send the original plaintext key instead of the masked placeholder
+      if (isEdit && !dirtyFields.key) {
+        data = { ...data, key: originalKeyRef.current };
       }
       return isEdit ? putChannel(data) : postCreateChannel(data);
     },

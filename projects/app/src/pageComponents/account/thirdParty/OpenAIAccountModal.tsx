@@ -7,6 +7,7 @@ import { useRequest } from '@fastgpt/web/hooks/useRequest';
 import type { OpenaiAccountType } from '@fastgpt/global/support/user/team/type';
 import { useUserStore } from '@/web/support/user/useUserStore';
 import { putUpdateTeam } from '@/web/support/user/team/api';
+import { desensitizeApiKey } from '@fastgpt/global/common/string/tools';
 
 const OpenAIAccountModal = ({
   defaultData,
@@ -17,15 +18,22 @@ const OpenAIAccountModal = ({
 }) => {
   const { t } = useTranslation();
   const { userInfo, initUserInfo } = useUserStore();
-  const { register, handleSubmit } = useForm({
+  const { register, handleSubmit, formState } = useForm({
     defaultValues: defaultData
+      ? {
+          ...defaultData,
+          key: desensitizeApiKey(defaultData.key)
+        }
+      : defaultData
   });
+  const { dirtyFields } = formState;
 
   const { runAsync: onSubmit, loading } = useRequest(
     async (data: OpenaiAccountType) => {
       if (!userInfo?.team.teamId) return;
+      const payload = dirtyFields.key ? data : { baseUrl: data.baseUrl };
       return putUpdateTeam({
-        openaiAccount: data
+        openaiAccount: payload
       });
     },
     {

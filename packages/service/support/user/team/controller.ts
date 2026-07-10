@@ -195,6 +195,9 @@ export async function updateTeam({
       const obj: Record<string, any> = {};
       if (openaiAccount?.key && openaiAccount?.baseUrl) {
         obj.openaiAccount = openaiAccount;
+      } else if (openaiAccount?.key !== '' && openaiAccount?.baseUrl !== undefined) {
+        // Key was omitted (unchanged masked value) - update baseUrl only
+        obj['openaiAccount.baseUrl'] = openaiAccount.baseUrl;
       }
       if (externalWorkflowVariable) {
         if (externalWorkflowVariable.value !== '') {
