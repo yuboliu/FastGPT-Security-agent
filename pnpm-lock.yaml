@@ -230,6 +230,9 @@ importers:
       '@chakra-ui/cli':
         specifier: ^2.4.1
         version: 2.5.8(encoding@0.1.13)(react@18.3.1)(ws@8.20.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
+      '@rollup/rollup-linux-x64-gnu':
+        specifier: 4.60.3
+        version: 4.60.3
       '@types/node':
         specifier: 'catalog:'
         version: 20.17.24
@@ -4986,7 +4989,6 @@ packages:
     resolution: {integrity: sha512-DAZDBHQfG2oQuhY7mc6I3/qB4LU2fQCjRvxbDwd/Jdvb9fypP4IJ4qmtu6lNjes6B531AI8cg1aKC2di97bUxA==}
     cpu: [x64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-x64-musl@4.60.3':
     resolution: {integrity: sha512-cRxsE8c13mZOh3vP+wLDxpQBRrOHDIGOWyDL93Sy0Ga8y515fBcC2pjUfFwUe5T7tqvTvWbCpg1URM/AXdWIXA==}
@@ -17651,8 +17653,7 @@ snapshots:
   '@rollup/rollup-linux-s390x-gnu@4.60.3':
     optional: true
 
-  '@rollup/rollup-linux-x64-gnu@4.60.3':
-    optional: true
+  '@rollup/rollup-linux-x64-gnu@4.60.3': {}
 
   '@rollup/rollup-linux-x64-musl@4.60.3':
     optional: true
