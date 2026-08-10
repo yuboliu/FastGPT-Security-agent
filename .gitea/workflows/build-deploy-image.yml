@@ -1,0 +1,58 @@
+# FastGPT 定制镜像自动构建与发布：
+# security-agent-dev 分支出现新提交（GitHub → Gitea 镜像同步 ≤10 分钟）即自动构建并部署到发布服务器。
+# 也可在 Gitea 页面手动触发（workflow_dispatch）。
+name: build-deploy-fastgpt-image
+on:
+  push:
+    branches: [security-agent-dev]
+  workflow_dispatch:
+
+concurrency:
+  group: release-deploy
+  cancel-in-progress: false
+
+env:
+  RELEASE_HOST: 10.10.31.33
+  RELEASE_USER: liuyubo
+  RELEASE_DIR: Security-agent
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 构建 fastgpt 镜像（20-40 分钟）
+        run: |
+          TAG=$(echo "${{ github.sha }}" | cut -c1-8)
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          docker build -f projects/app/Dockerfile -t "fastgpt:$TAG" . --build-arg proxy=cn
+
+      - name: 配置发布服务器 SSH
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          echo "${{ secrets.RELEASE_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$RELEASE_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: 传输镜像到发布服务器
+        run: |
+          TAG=$(echo "${{ github.sha }}" | cut -c1-8)
+          docker save "fastgpt:$TAG" | gzip -1 | ssh "$RELEASE_USER@$RELEASE_HOST" 'gunzip | docker load'
+
+      - name: 发布服务器滚动更新 fastgpt-app
+        run: |
+          TAG=$(echo "${{ github.sha }}" | cut -c1-8)
+          ssh "$RELEASE_USER@$RELEASE_HOST" "
+            set -e
+            docker tag fastgpt:$TAG fastgpt:security-agent
+            cd ~/$RELEASE_DIR
+            git -C third_party/FastGPT fetch origin security-agent-dev || true
+            git -C third_party/FastGPT reset --hard ${{ github.sha }} || true
+            docker compose --env-file config/.env \
+              -f docker/docker-compose.yml -f docker/docker-compose.override.yml \
+              -p fastgpt up -d fastgpt-app
+            sleep 15
+            code=\$(curl -s -o /dev/null -w '%{http_code}' --connect-timeout 10 http://10.10.31.33:3000 || true)
+            echo \"FastGPT health -> \$code\"
+          "
