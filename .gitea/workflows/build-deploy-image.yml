@@ -41,14 +41,28 @@ jobs:
           docker save "fastgpt:$TAG" | gzip -1 | ssh "$RELEASE_USER@$RELEASE_HOST" 'gunzip | docker load'
 
       - name: 发布服务器滚动更新 fastgpt-app
+        env:
+          RELEASE_MIRROR_URL: ${{ secrets.RELEASE_MIRROR_URL }}
         run: |
           TAG=$(echo "${{ github.sha }}" | cut -c1-8)
           ssh "$RELEASE_USER@$RELEASE_HOST" "
             set -e
             docker tag fastgpt:$TAG fastgpt:security-agent
+            # 全新服务器自举：主仓库 / 嵌套仓库（即本仓库）不存在时从 Gitea 镜像克隆
+            if [ ! -d ~/$RELEASE_DIR/.git ]; then
+              git clone $RELEASE_MIRROR_URL/Security-agent.git ~/$RELEASE_DIR
+              mkdir -p ~/$RELEASE_DIR/third_party
+            fi
+            if [ ! -d ~/$RELEASE_DIR/third_party/FastGPT/.git ]; then
+              git clone -b security-agent-dev $RELEASE_MIRROR_URL/FastGPT-Security-agent.git ~/$RELEASE_DIR/third_party/FastGPT
+            fi
             cd ~/$RELEASE_DIR
             git -C third_party/FastGPT fetch origin security-agent-dev || true
             git -C third_party/FastGPT reset --hard ${{ github.sha }} || true
+            if [ ! -f config/.env ]; then
+              echo '[fastgpt-image] config/.env 不存在（全新服务器）：镜像已就绪，滚动更新推迟到 provision 同步配置后'
+              exit 0
+            fi
             docker compose --env-file config/.env \
               -f docker/docker-compose.yml -f docker/docker-compose.override.yml \
               -p fastgpt up -d fastgpt-app
