@@ -1,6 +1,7 @@
 import { MongoApp } from '@fastgpt/service/core/app/schema';
 import { authApp } from '@fastgpt/service/support/permission/app/auth';
 import { beforeUpdateAppFormat } from '@fastgpt/service/core/app/controller';
+import { normalizeLegacyWorkflowData } from '@fastgpt/service/core/workflow/legacyCompatibility';
 import { NextAPI } from '@/service/middleware/entry';
 import {
   ManagePermissionVal,
@@ -135,6 +136,9 @@ async function handler(req: ApiRequestProps<UpdateAppBodyType, UpdateAppQueryTyp
     beforeUpdateAppFormat({
       nodes
     });
+
+    // 历史遗留数据归一：valueType 'array' → arrayObject；清除残留的输出哨兵行
+    normalizeLegacyWorkflowData(nodes as unknown[]);
 
     if (app.type === AppTypeEnum.mcpToolSet && avatar) {
       await MongoApp.updateMany({ parentId: appId, teamId: app.teamId }, { avatar }, { session });

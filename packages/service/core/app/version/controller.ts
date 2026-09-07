@@ -1,6 +1,7 @@
 import { type AppSchemaType } from '@fastgpt/global/core/app/type';
 import { MongoAppVersion } from './schema';
 import { Types } from '../../../common/mongo';
+import { normalizeLegacyWorkflowData } from '../../workflow/legacyCompatibility';
 
 export const getAppLatestVersion = async (appId: string, app?: AppSchemaType) => {
   const version = await MongoAppVersion.findOne({
@@ -13,6 +14,8 @@ export const getAppLatestVersion = async (appId: string, app?: AppSchemaType) =>
     .lean();
 
   if (version) {
+    // 历史遗留数据归一，避免严格 schema 解析失败（valueType 'array' / 残留输出哨兵行）
+    normalizeLegacyWorkflowData(version.nodes as unknown[]);
     return {
       versionId: String(version._id),
       versionName: version.versionName,
@@ -21,6 +24,8 @@ export const getAppLatestVersion = async (appId: string, app?: AppSchemaType) =>
       chatConfig: version.chatConfig || app?.chatConfig || {}
     };
   }
+  // 历史遗留数据归一，避免严格 schema 解析失败
+  normalizeLegacyWorkflowData(app?.modules as unknown[]);
   return {
     versionId: app?.pluginData?.nodeVersion,
     versionName: app?.name,
@@ -47,6 +52,8 @@ export const getAppVersionById = async ({
     }).lean();
 
     if (version) {
+      // 历史遗留数据归一，避免严格 schema 解析失败
+      normalizeLegacyWorkflowData(version.nodes as unknown[]);
       return {
         versionId: String(version._id),
         versionName: version.versionName,
